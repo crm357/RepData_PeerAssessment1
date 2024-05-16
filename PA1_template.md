@@ -1,13 +1,11 @@
 ---
 title: "Reproducible Research Week 2 Project 1 Report"
 author: "Anonymous"
-date: "`r Sys.Date()`"
+date: "2024-05-15"
 output: html_document
 ---
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ### Assignment
 
@@ -35,7 +33,8 @@ It is taken that any reproduction of this paper will begin after the unzip of th
 
 The libraries this analysis will use:  
 
-```{r message=FALSE}
+
+```r
 library(dplyr)
 library(lubridate)
 library(lattice)
@@ -46,30 +45,59 @@ library(lattice)
 Let's preprocess the original data to see what we're dealing with.  
 
 
-```{r}
+
+```r
 # let's bring in the raw data...
 foo <- read.csv("activity.csv")
 # ...and what does the data look like?
 str(foo)
 ```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : chr  "2012-10-01" "2012-10-01" "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
 Let us account for any missing values.
-```{r}
+
+```r
 # with only 3 columns, who has the missing data?
 anyNA(foo$steps)
+```
+
+```
+## [1] TRUE
+```
+
+```r
 anyNA(foo$date)
+```
+
+```
+## [1] FALSE
+```
+
+```r
 anyNA(foo$interval)
+```
+
+```
+## [1] FALSE
 ```
 
 *** 
 
 #### What is mean total number of steps taken per day?
 *For this part of the assignment, you can ignore the missing values in the dataset.*  
-```{r}
+
+```r
 foo <- foo[complete.cases(foo),]
 ```
 
 1. *Make a histogram of the total number of steps taken each day.*  
-```{r fig.align='center'}
+
+```r
 SPD <- foo %>% group_by(date) %>% summarise(StepsPerDay = sum(steps))
 hist(SPD$StepsPerDay, 
      col = "salmon", 
@@ -78,26 +106,42 @@ hist(SPD$StepsPerDay,
 )
 ```
 
+<div class="figure" style="text-align: center">
+<img src="figure/unnamed-chunk-5-1.png" alt="plot of chunk unnamed-chunk-5"  />
+<p class="caption">plot of chunk unnamed-chunk-5</p>
+</div>
+
 2. *Calculate and report the mean and median total number of steps taken per day.*  
 
 The mean calculated:  
 
-```{r}
+
+```r
 mean(SPD$StepsPerDay)
-```   
+```
+
+```
+## [1] 10766.19
+```
 
 And the median calculated:  
 
-```{r}
+
+```r
 median(SPD$StepsPerDay)
-```  
+```
+
+```
+## [1] 10765
+```
 
 *** 
 
 
 #### What is the average daily activity pattern?
 *Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)*  
-```{r fig.align='center'}
+
+```r
 avgSPD <- foo %>% group_by(interval) %>% summarise(AvgPerDay = mean(steps))
 colnames(avgSPD) <- c("Time","AvgSteps")
 plot(avgSPD$Time, avgSPD$AvgSteps, 
@@ -107,10 +151,23 @@ plot(avgSPD$Time, avgSPD$AvgSteps,
      )
 ```
 
+<div class="figure" style="text-align: center">
+<img src="figure/unnamed-chunk-8-1.png" alt="plot of chunk unnamed-chunk-8"  />
+<p class="caption">plot of chunk unnamed-chunk-8</p>
+</div>
+
 
 *Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?*  
-```{r}
+
+```r
 avgSPD[which.max(avgSPD$AvgSteps),1]
+```
+
+```
+## # A tibble: 1 × 1
+##    Time
+##   <int>
+## 1   835
 ```
 It appears that 8:35a.m., on average, is the busiest part of the day!  
 
@@ -121,26 +178,34 @@ It appears that 8:35a.m., on average, is the busiest part of the day!
 #### Imputing missing values
 
 *Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.*  
-```{r}
+
+```r
 # we reset the original data by simply reloading the original raw dataset
 foo <- read.csv("activity.csv")
 ```
 
 *Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)*  
-```{r}
+
+```r
 sum(is.na(foo))
 ```
-There appears to be `r sum(is.na(foo))` missing values for 'steps', marking a 
-`r (sum(is.na(foo)) / nrow(foo)) * 100.0`% loss of the total step measurements.  
+
+```
+## [1] 2304
+```
+There appears to be 2304 missing values for 'steps', marking a 
+13.1147541% loss of the total step measurements.  
 
 *Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.*  
-```{r}
+
+```r
 X <- foo %>% group_by(date) %>% summarise(steps = mean(steps))
 M <- mean(X$steps,na.rm = TRUE)
 ```
 
 *Create a new dataset that is equal to the original dataset but with the missing data filled in.*  
-```{r}
+
+```r
 foo$steps[is.na(foo$steps)] <- M
 ```
 
@@ -148,7 +213,8 @@ foo$steps[is.na(foo$steps)] <- M
 
 
 *Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?*  
-```{r fig.align='center'}
+
+```r
 SPD <- foo %>% group_by(date) %>% summarise(StepsPerDay = sum(steps))
 hist(SPD$StepsPerDay, 
      col = "salmon", 
@@ -157,21 +223,35 @@ hist(SPD$StepsPerDay,
 )
 ```
 
+<div class="figure" style="text-align: center">
+<img src="figure/unnamed-chunk-14-1.png" alt="plot of chunk unnamed-chunk-14"  />
+<p class="caption">plot of chunk unnamed-chunk-14</p>
+</div>
+
 With the mean being:  
 
-```{r}
+
+```r
 mean(SPD$StepsPerDay)
-```   
+```
+
+```
+## [1] 10766.19
+```
 And the median being:  
 
-```{r}
+
+```r
 median(SPD$StepsPerDay)
-```  
+```
+
+```
+## [1] 10766.19
+```
 
 *Do these values differ from the estimates from the first part of the assignment?  What is the impact of imputing missing data on the estimates of the total daily number of steps?*  
 
-Yes.  The frequency counts have increased 
-and the mean and median are now the same.  
+Yes.  The frequency counts hve increased and the mean and median are now the same.  
 
 *** 
 
@@ -181,25 +261,33 @@ and the mean and median are now the same.
 
 *Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.*  
 
-```{r}
+
+```r
 F <- c("weekday","weekend") 
 F <- factor(F)
 ```
 
 *Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).*  
 
-```{r fig.align='center',message=FALSE}
+
+```r
 foo$date <- as.Date(foo$date)
 foo$DayType <- F[(weekdays(foo$date) %in% c("Saturday", "Sunday")) + 1]
 avgSPD <- foo %>% group_by(DayType,interval) %>% summarise(AvgPerDay = mean(steps))
 colnames(avgSPD) <- c("DayType","Interval","AvgSteps")
+panels <- list(strip.background = list(col = "wheat"))
 xyplot(AvgSteps ~ Interval | as.factor(DayType), data = avgSPD, 
        type = "l", 
        col = "blue", 
-       par.settings = list(strip.background = list(col = "wheat")),  
+       par.settings = panels, 
        layout = c(1,2)
 )
 ```
+
+<div class="figure" style="text-align: center">
+<img src="figure/unnamed-chunk-18-1.png" alt="plot of chunk unnamed-chunk-18"  />
+<p class="caption">plot of chunk unnamed-chunk-18</p>
+</div>
   
 Yes, visually, one can see that during the week there is a burst of activity during the morning 
 and a slight settling over the afternoon, whereas, during a weekend, there is a more pronounced spread of busy-feet during the entire day.  
